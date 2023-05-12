@@ -6,11 +6,13 @@
 
 https://medium.com/@sebishenzenn/running-ours-asp-net-core-apps-using-apache-server-with-reverse-proxy-c0784ae7babd
 
-`/var/www/DOMAIN/data/vuc.db`
+Swagger API docs: /swagger/index.html
 
-Published app should be copied to `/var/www/DOMAIN`
+Published app should be copied to your vhost folder, for example: `/var/www/DOMAIN`
 
-example vhost / reverse proxy:
+Database is stored in `/var/www/DOMAIN/data/vuc.db` (production) or in `Environment.SpecialFolder.LocalApplicationData` (development)
+
+vhost / reverse proxy example:
 
 ```
 <VirtualHost *:80>

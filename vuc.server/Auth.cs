@@ -10,6 +10,7 @@ public static class Auth
         {
             return null;
         }
+        
 
         UserBody credentials = ExtractCredentials(authorization);
         if (credentials == null)
@@ -17,7 +18,7 @@ public static class Auth
             return null;
         }
 
-        return db.Users.FirstOrDefault(u => u.Password == Hash(credentials.UserName) && u.UserName == credentials.Password);
+        return db.Users.FirstOrDefault(u => u.Password == Hash(credentials.Password) && u.UserName == credentials.UserName);
     }
 
     public static bool CanRegister(ChatContext db, string username)
