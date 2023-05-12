@@ -3,14 +3,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using vuc.server;
 
 #nullable disable
 
 namespace vuc.server.Migrations
 {
     [DbContext(typeof(ChatContext))]
-    [Migration("20230510142923_primaries")]
-    partial class primaries
+    [Migration("20230512210802_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -18,7 +19,7 @@ namespace vuc.server.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.5");
 
-            modelBuilder.Entity("Message", b =>
+            modelBuilder.Entity("vuc.server.Message", b =>
                 {
                     b.Property<int>("MessageId")
                         .ValueGeneratedOnAdd()
@@ -30,11 +31,8 @@ namespace vuc.server.Migrations
                     b.Property<int>("RoomId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("UserIp")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("UserName")
-                        .HasColumnType("TEXT");
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("MessageId");
 
@@ -43,33 +41,58 @@ namespace vuc.server.Migrations
                     b.ToTable("Messages");
                 });
 
-            modelBuilder.Entity("Room", b =>
+            modelBuilder.Entity("vuc.server.Room", b =>
                 {
                     b.Property<int>("RoomId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("RoomId");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("Rooms");
                 });
 
-            modelBuilder.Entity("Message", b =>
+            modelBuilder.Entity("vuc.server.User", b =>
                 {
-                    b.HasOne("Room", "Room")
+                    b.Property<int>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("UserId");
+
+                    b.HasIndex("UserName")
+                        .IsUnique();
+
+                    b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("vuc.server.Message", b =>
+                {
+                    b.HasOne("vuc.server.Room", null)
                         .WithMany("Messages")
                         .HasForeignKey("RoomId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Room");
                 });
 
-            modelBuilder.Entity("Room", b =>
+            modelBuilder.Entity("vuc.server.Room", b =>
                 {
                     b.Navigation("Messages");
                 });
