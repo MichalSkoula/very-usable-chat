@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 using vuc.server;
-using Microsoft.AspNetCore.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ChatContext>();
@@ -10,7 +10,8 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 app.UseSwagger();
-app.UseSwaggerUI(c => {
+app.UseSwaggerUI(c =>
+{
     // hide schemas
     c.DefaultModelsExpandDepth(-1);
 });
@@ -22,9 +23,9 @@ app.MapPost(
     "/users/register",
     async (UserBody user, ChatContext db) =>
     {
-        if (!Auth.CanRegister(db, user.UserName))
+        if (!Auth.CanRegister(db, user.UserName) || user.UserName.Length < 3)
         {
-            return Results.Problem("Problem with registration. User may already exists.");
+            return Results.Problem("Problem with registration. User may already exists or provided username is too short.");
         }
 
         db.Users.Add(new User(user.UserName, Auth.Hash(user.Password)));
@@ -33,6 +34,23 @@ app.MapPost(
     }
 )
 .WithDescription("Register with UserName and Password. UserName must be unique. All other methods require Authorization: Basic header.")
+.WithOpenApi();
+
+app.MapPost(
+    "/users/login",
+    async ([FromHeader(Name = "Authorization")] string ? authorization, UserBody user, ChatContext db) =>
+    {
+        if (Auth.Login(db, authorization) == null)
+        {
+            return Results.Problem("Cannot login.");
+        }
+        else
+        {
+            return Results.Ok();
+        }
+    }
+)
+.WithDescription("Check if user exists")
 .WithOpenApi();
 
 // ROOMS
@@ -102,7 +120,7 @@ app.MapPost(
 
 // MESSAGES
 app.MapGet(
-    "/messages/{roomId}", 
+    "/messages/{roomId}",
     async ([FromRoute] int roomId, [FromHeader(Name = "Authorization")] string? authorization, ChatContext db) =>
     {
         if (Auth.Login(db, authorization) == null)
@@ -124,8 +142,8 @@ app.MapGet(
 .WithOpenApi();
 
 app.MapPost(
-    "/messages/{roomId}", 
-    async ([FromRoute] int roomId, [FromBody]Message message, [FromHeader(Name = "Authorization")] string? authorization, ChatContext db) =>
+    "/messages/{roomId}",
+    async ([FromRoute] int roomId, [FromBody] Message message, [FromHeader(Name = "Authorization")] string? authorization, ChatContext db) =>
     {
         User? user = Auth.Login(db, authorization);
         if (user == null)

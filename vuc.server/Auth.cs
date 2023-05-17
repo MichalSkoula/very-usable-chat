@@ -10,7 +10,7 @@ public static class Auth
         {
             return null;
         }
-        
+
 
         UserBody credentials = ExtractCredentials(authorization);
         if (credentials == null)
