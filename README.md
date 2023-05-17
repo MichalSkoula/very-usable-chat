@@ -1,18 +1,25 @@
 # very-usable-chat
 
-## client
+Demo project - server / klient chat application in .NET 7
 
-## server 
+## Client
 
-https://medium.com/@sebishenzenn/running-ours-asp-net-core-apps-using-apache-server-with-reverse-proxy-c0784ae7babd
+Console app with Terminal.Gui 
+
+## Server - ASP.NET Minimal API 
+
+Run it:
+```dotnet run```
 
 Swagger API docs: /swagger/index.html
 
-Published app should be copied to your vhost folder, for example: `/var/www/DOMAIN`
+- Published app should be copied to your webserver folder, for example: `/var/www/DOMAIN`
 
-Database is stored in `/var/www/DOMAIN/data/vuc.db` (production) or in `Environment.SpecialFolder.LocalApplicationData` (development)
+- Database is stored in `/var/www/DOMAIN/data/vuc.db` (production) or in `Environment.SpecialFolder.LocalApplicationData` (development)
 
-vhost / reverse proxy example:
+- How to run it on linux server: https://www.printables.com/cs/model/163302-worlds-best-css-developer-trophy
+
+- vhost / reverse proxy example:
 
 ```
 <VirtualHost *:80>

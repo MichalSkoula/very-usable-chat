@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Net;
 using vuc.server;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,7 +37,7 @@ app.MapPost(
 
 app.MapPost(
     "/users/login",
-    async ([FromHeader(Name = "Authorization")] string ? authorization, UserBody user, ChatContext db) =>
+    async ([FromHeader(Name = "Authorization")] string? authorization, UserBody user, ChatContext db) =>
     {
         if (Auth.Login(db, authorization) == null)
         {
@@ -100,6 +99,11 @@ app.MapPost(
         if (user == null)
         {
             return Results.Unauthorized();
+        }
+
+        if (room.Name.Length < 3)
+        {
+            return Results.Problem("Room title is too short");
         }
 
         if (db.Rooms.Where(r => r.Name == room.Name).Any())

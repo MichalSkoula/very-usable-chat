@@ -1,74 +1,73 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace vuc.chat
+namespace vuc.chat;
+
+public class FileIO
 {
-    public class FileIO
+    public string File { get; set; }
+    public string Folder { get; private set; }
+    private string FullPath
     {
-        public string File { get; set; }
-        public string Folder { get; private set; }
-        private string FullPath
+        get { return Path.Combine(this.Folder, File); }
+    }
+
+    public FileIO(string file = null)
+    {
+        this.File = file;
+
+        this.Folder = "";/* Path.Combine(GetFolderPath(SpecialFolder.ApplicationData), "VUC");
+
+        if (!Directory.Exists(this.Folder))
         {
-            get { return Path.Combine(this.Folder, File); }
+            Directory.CreateDirectory(this.Folder);
         }
+        */
+    }
 
-        public FileIO(string file = null)
+    public void Load()
+    {
+        if (System.IO.File.Exists(this.FullPath))
         {
-            this.File = file;
+            string json = System.IO.File.ReadAllText(FullPath);
+            System.Diagnostics.Debug.WriteLine(json.ToString());
 
-            this.Folder = "";/* Path.Combine(GetFolderPath(SpecialFolder.ApplicationData), "VUC");
-
-            if (!Directory.Exists(this.Folder))
+            try
             {
-                Directory.CreateDirectory(this.Folder);
-            }
-            */
-        }
+                dynamic data = JObject.Parse(json);
 
-        public void Load()
-        {
-            if (System.IO.File.Exists(this.FullPath))
-            {
-                string json = System.IO.File.ReadAllText(FullPath);
-                System.Diagnostics.Debug.WriteLine(json.ToString());
-
-                try
+                if (data.ContainsKey("Server"))
                 {
-                    dynamic data = JObject.Parse(json);
-
-                    if (data.ContainsKey("Server"))
-                    {
-                        App.SaveData.Server = data.Server;
-                    }
-                    if (data.ContainsKey("RoomId"))
-                    {
-                        App.SaveData.RoomId = data.RoomId;
-                    }
-                    if (data.ContainsKey("UserName"))
-                    {
-                        App.SaveData.UserName = data.UserName;
-                    }
-                    if (data.ContainsKey("Password"))
-                    {
-                        App.SaveData.Password = data.Password;
-                    }
+                    App.SaveData.Server = data.Server;
                 }
-                catch (Exception e)
+                if (data.ContainsKey("RoomId"))
                 {
-
+                    App.SaveData.RoomId = data.RoomId;
+                }
+                if (data.ContainsKey("UserName"))
+                {
+                    App.SaveData.UserName = data.UserName;
+                }
+                if (data.ContainsKey("Password"))
+                {
+                    App.SaveData.Password = data.Password;
                 }
             }
-        }
+            catch (Exception e)
+            {
 
-        public void Save(object data)
-        {
-            string json = JsonConvert.SerializeObject(data, Newtonsoft.Json.Formatting.Indented);
-            System.IO.File.WriteAllText(this.FullPath, json);
+            }
         }
+    }
 
-        public void Delete()
-        {
-            System.IO.File.Delete(this.FullPath);
-        }
+    public void Save(object data)
+    {
+        string json = JsonConvert.SerializeObject(data, Newtonsoft.Json.Formatting.Indented);
+        System.IO.File.WriteAllText(this.FullPath, json);
+    }
+
+    public void Delete()
+    {
+        System.IO.File.Delete(this.FullPath);
     }
 }
