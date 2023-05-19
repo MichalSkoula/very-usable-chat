@@ -8,6 +8,7 @@ public class App
     public static SaveData SaveData = new SaveData("http://localhost:5049/");
     private MenuBar loggedMenu = new MenuBar();
     private MenuBar anonymMenu = new MenuBar();
+    private List<Room> rooms = new();
 
     public App()
     {
@@ -135,8 +136,14 @@ public class App
     {
         var window = new Window("Choose a chat room | User " + SaveData.UserName) { X = 0, Y = 1, Width = Dim.Fill(), Height = Dim.Fill() - 1 };
 
-        List<Room> rooms = APIClient.GetRooms();
+        rooms = APIClient.GetRooms();
+
         ListView list = new ListView(rooms) { X = 0, Y = 0, Width = 30, Height = Dim.Fill() - 2 };
+
+        list.OpenSelectedItem += (ListViewItemEventArgs item) =>
+        {
+            RoomScreen(item);
+        };
 
         window.Add(list);
 
@@ -146,7 +153,7 @@ public class App
 
     private void RoomCreateScreen()
     {
-        var window = new Window("Create a new chat room") { X = 0, Y = 1, Width = Dim.Fill(), Height = Dim.Fill() - 1 };
+        var window = new Window("Create a new chat room | User " + SaveData.UserName) { X = 0, Y = 1, Width = Dim.Fill(), Height = Dim.Fill() - 1 };
 
         window.Add(new Label("Title: ") { X = 1, Y = 1, Width = 20, Height = 1 });
         TextField RoomTitle = new TextField("") { X = 1, Y = 2, Width = 30, Height = 1 };
@@ -168,6 +175,31 @@ public class App
         };
         window.Add(btn);
 
+        Application.Top.RemoveAll();
+        Application.Top.Add(loggedMenu, window);
+    }
+
+    private void RoomScreen(ListViewItemEventArgs item)
+    {
+        var window = new Window("Room: " + item.Value + " | User " + SaveData.UserName) { X = 0, Y = 1, Width = Dim.Fill(), Height = Dim.Fill() - 1 };
+
+        TextView content = new TextView() { X = 1, Y = 1, Width = Dim.Fill() - 1, Height = Dim.Fill() - 1 };
+        content.ReadOnly = true;
+
+        // item.Item is index in rooms list (not an actual id)--------------------------------
+        var messages = APIClient.GetMessages(rooms.ElementAtOrDefault(item.Item).RoomId);
+        string text = "";
+        foreach (var message in messages)
+        {
+
+            System.Diagnostics.Debug.WriteLine(message);
+            text += message.User.UserName + "\n";
+            text += message.Content + "\n\n";
+        }
+        content.Text = text;
+        //content.ScrollTo(content.height) ????---------------------------------------------
+
+        window.Add(content);
         Application.Top.RemoveAll();
         Application.Top.Add(loggedMenu, window);
     }

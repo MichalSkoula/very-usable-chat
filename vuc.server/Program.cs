@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using vuc.server;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -62,7 +63,7 @@ app.MapGet(
             return Results.Unauthorized();
         }
 
-        return Results.Ok(db.Rooms.ToList());
+        return Results.Ok(db.Rooms.Include(u => u.User).ToList());
     }
 )
 .WithDescription("Get all available chat rooms.")
@@ -77,7 +78,7 @@ app.MapGet(
             return Results.Unauthorized();
         }
 
-        var room = db.Rooms.FirstOrDefault(r => r.RoomId == roomId);
+        var room = db.Rooms.Include(u => u.User).FirstOrDefault(r => r.RoomId == roomId);
         if (room is Room)
         {
             return Results.Ok(room);
@@ -138,7 +139,7 @@ app.MapGet(
             return Results.NotFound();
         }
 
-        var messages = db.Messages.Where(m => m.RoomId == roomId).Take(100).ToList();
+        var messages = db.Messages.Include(u => u.User).Where(m => m.RoomId == roomId).Take(100).ToList();
         return Results.Ok(messages);
     }
 )

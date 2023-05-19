@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -37,9 +36,7 @@ public static class APIClient
     {
         try
         {
-            // basic auth
-            string credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{userName}:{password}"));
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", credentials);
+            Authenticate(userName, password);
 
             HttpContent content = new StringContent(System.Text.Json.JsonSerializer.Serialize(new { }), Encoding.UTF8, "application/json");
             HttpResponseMessage response = client.PostAsync(App.SaveData.Server + "users/login", content).Result;
@@ -56,9 +53,7 @@ public static class APIClient
     {
         try
         {
-            // basic auth
-            string credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{App.SaveData.UserName}:{App.SaveData.Password}"));
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", credentials);
+            Authenticate();
 
             HttpContent content = new StringContent(System.Text.Json.JsonSerializer.Serialize(new { Name = roomTitle }), Encoding.UTF8, "application/json");
             HttpResponseMessage response = client.PostAsync(App.SaveData.Server + "rooms", content).Result;
@@ -77,14 +72,13 @@ public static class APIClient
     {
         try
         {
-            // basic auth
-            string credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{App.SaveData.UserName}:{App.SaveData.Password}"));
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", credentials);
+            Authenticate();
 
             HttpResponseMessage response = client.GetAsync(App.SaveData.Server + "rooms").Result;
             string json = response.Content.ReadAsStringAsync().Result;
 
             List<Room> rooms = JsonConvert.DeserializeObject<List<Room>>(json);
+
             return rooms;
         }
         catch (HttpRequestException e)
@@ -94,20 +88,21 @@ public static class APIClient
         }
     }
 
-    public static JObject? TryToParseContent(HttpResponseMessage response)
+    public static List<Message> GetMessages(int roomId)
     {
         try
         {
-            string responseContent = response.Content.ReadAsStringAsync().Result;
-            JObject o = JObject.Parse(responseContent);
-            return o;
+            HttpResponseMessage response = client.GetAsync(App.SaveData.Server + "messages/" + roomId).Result;
+            string json = response.Content.ReadAsStringAsync().Result;
+
+            List<Message> messages = JsonConvert.DeserializeObject<List<Message>>(json);
+            return messages;
         }
-        catch (Exception ex)
+        catch (HttpRequestException e)
         {
-
+            System.Diagnostics.Debug.WriteLine(e.Message);
+            return new List<Message>();
         }
-
-        return null;
     }
 
     public static string TryToParseDetail(HttpResponseMessage response)
@@ -124,5 +119,12 @@ public static class APIClient
         }
 
         return "";
+    }
+
+    private static void Authenticate(string? userName = null, string? password = null)
+    {
+        // basic auth
+        string credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{userName ?? App.SaveData.UserName}:{password ?? App.SaveData.Password}"));
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", credentials);
     }
 }
