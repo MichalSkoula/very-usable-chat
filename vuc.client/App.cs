@@ -228,6 +228,7 @@ public class App
     {
         runTask = true;
 
+        // item.Item is index in rooms list (not an actual id)
         int roomId = rooms.ElementAtOrDefault(item.Item).RoomId;
 
         var window = new Window("Room: " + item.Value + " | User " + SaveData.UserName) { X = 0, Y = 1, Width = Dim.Fill(), Height = Dim.Fill() };
@@ -275,6 +276,7 @@ public class App
             }
         };
 
+        // periodically update content 
         var task = Task.Run(async () =>
         {
             for (; ; )
@@ -284,7 +286,6 @@ public class App
                     throw new OperationCanceledException();
                 }
 
-                // item.Item is index in rooms list (not an actual id)
                 var messages = APIClient.GetMessages(roomId);
                 string text = "";
                 foreach (var message in messages)
@@ -292,7 +293,13 @@ public class App
                     text += message.InsertedAt.TimeOfDay + "\t" + message.User.UserName + "\n";
                     text += message.Content + "\n\n";
                 }
-                content.Text = text;
+
+                // this must be done in mainloop to be immediately reflected in the UI
+                Application.MainLoop.Invoke(() =>
+                {
+                    content.Text = text;
+                });
+
                 Debug.WriteLine("Fetched 3 seconds");
                 await Task.Delay(3000);
             }
