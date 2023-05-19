@@ -1,4 +1,4 @@
-﻿namespace vuc.client;
+﻿namespace vuc.client.Classes;
 
 public class SaveData
 {

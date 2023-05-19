@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
-using System.Threading;
 using Terminal.Gui;
+using vuc.client.Classes;
 using static Terminal.Gui.View;
 
 namespace vuc.client;
@@ -11,7 +11,7 @@ public class App
     public static SaveData SaveData = new SaveData("http://localhost:5049/");
     private MenuBar loggedMenu = new MenuBar();
     private MenuBar anonymMenu = new MenuBar();
-    private List<shared.Room> rooms = new();
+    private List<Room> rooms = new();
     private bool runTask = false;
 
     public App()
@@ -166,6 +166,12 @@ public class App
 
         rooms = APIClient.GetRooms();
 
+        if (!rooms.Any())
+        {
+            RoomCreateScreen();
+            return;
+        }
+
         ListView list = new ListView(rooms) { X = 0, Y = 0, Width = 30, Height = Dim.Fill() - 2 };
 
         list.OpenSelectedItem += (ListViewItemEventArgs item) =>
@@ -222,13 +228,55 @@ public class App
     {
         runTask = true;
 
-        var window = new Window("Room: " + item.Value + " | User " + SaveData.UserName) { X = 0, Y = 1, Width = Dim.Fill(), Height = Dim.Fill() - 1 };
+        int roomId = rooms.ElementAtOrDefault(item.Item).RoomId;
 
-        TextView content = new TextView() { X = 1, Y = 1, Width = Dim.Fill() - 1, Height = Dim.Fill() - 1 };
+        var window = new Window("Room: " + item.Value + " | User " + SaveData.UserName) { X = 0, Y = 1, Width = Dim.Fill(), Height = Dim.Fill() };
+
+        TextView content = new TextView() { X = 1, Y = 3, Width = Dim.Fill() - 1, Height = Dim.Fill() - 1 };
         content.ReadOnly = true;
+        content.WordWrap = true;
         window.Add(content);
 
-        var task = Task.Run(async () => {
+        TextField newMessage = new TextField("") { X = 1, Y = 1, Width = Dim.Percent(70), Height = 1 };
+        window.Add(newMessage);
+        newMessage.SetFocus();
+
+        Button btn = new Button("Post") { X = Pos.Percent(80), Y = 1, Width = Dim.Percent(20) };
+        btn.Clicked += () =>
+        {
+            if (((string)newMessage.Text).Trim() == "")
+            {
+                return;
+            }
+
+            newMessage.ReadOnly = true;
+            Response response = APIClient.PostMessage(roomId, (string)newMessage.Text);
+            newMessage.ReadOnly = false;
+
+            if (response.Success)
+            {
+                newMessage.Text = "";
+            }
+            else
+            {
+                MessageBox.ErrorQuery("An error occured", response.Message, "Hmm");
+            }
+
+            newMessage.SetFocus();
+        };
+        window.Add(btn);
+
+        // enter key - post
+        window.KeyDown += (KeyEventEventArgs args) =>
+        {
+            if (args.KeyEvent.Key == Key.Enter)
+            {
+                btn.OnClicked();
+            }
+        };
+
+        var task = Task.Run(async () =>
+        {
             for (; ; )
             {
                 if (!runTask)
@@ -237,12 +285,12 @@ public class App
                 }
 
                 // item.Item is index in rooms list (not an actual id)
-                var messages = APIClient.GetMessages(rooms.ElementAtOrDefault(item.Item).RoomId);
+                var messages = APIClient.GetMessages(roomId);
                 string text = "";
                 foreach (var message in messages)
                 {
                     text += message.InsertedAt.TimeOfDay + "\t" + message.User.UserName + "\n";
-                    text += "\t\t\t" + message.Content + "\n\n";
+                    text += message.Content + "\n\n";
                 }
                 content.Text = text;
                 Debug.WriteLine("Fetched 3 seconds");
@@ -284,8 +332,6 @@ public class App
             Application.Top.Add(win, anonymMenu);
         }
 
-
         Application.Run();
     }
-
 }

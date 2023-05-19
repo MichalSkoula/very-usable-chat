@@ -1,4 +1,4 @@
-﻿namespace vuc.shared;
+﻿namespace vuc.client.Classes;
 
 public class Message
 {

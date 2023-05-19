@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using vuc.server;
+using vuc.server.Classes;
+using vuc.server.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ChatContext>();
@@ -21,14 +23,14 @@ using var db = new ChatContext();
 // USERS
 app.MapPost(
     "/users/register",
-    async (vuc.shared.UserRegister user, ChatContext db) =>
+    async (UserRegister user, ChatContext db) =>
     {
         if (!Auth.CanRegister(db, user.UserName) || user.UserName.Length < 3)
         {
             return Results.Problem("Problem with registration. User may already exists or provided username is too short.");
         }
 
-        db.Users.Add(new vuc.server.User(user.UserName, Auth.Hash(user.Password)));
+        db.Users.Add(new User(user.UserName, Auth.Hash(user.Password)));
         await db.SaveChangesAsync();
         return Results.Ok();
     }
@@ -38,7 +40,7 @@ app.MapPost(
 
 app.MapPost(
     "/users/login",
-    async ([FromHeader(Name = "Authorization")] string? authorization, vuc.shared.UserRegister user, ChatContext db) =>
+    async ([FromHeader(Name = "Authorization")] string? authorization, UserRegister user, ChatContext db) =>
     {
         if (Auth.Login(db, authorization) == null)
         {

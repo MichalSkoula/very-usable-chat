@@ -1,11 +1,11 @@
 ﻿namespace vuc.server;
 
 using System.Text;
-using vuc.shared;
+using vuc.server.Classes;
 
 public static class Auth
 {
-    public static User? Login(ChatContext db, string? authorization)
+    public static Models.User? Login(ChatContext db, string? authorization)
     {
         if (authorization == null)
         {
