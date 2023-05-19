@@ -1,6 +1,7 @@
 ﻿namespace vuc.server;
 
 using System.Text;
+using vuc.shared;
 
 public static class Auth
 {
@@ -12,7 +13,7 @@ public static class Auth
         }
 
 
-        UserBody credentials = ExtractCredentials(authorization);
+        UserRegister credentials = ExtractCredentials(authorization);
         if (credentials == null)
         {
             return null;
@@ -40,7 +41,7 @@ public static class Auth
         return hash;
     }
 
-    public static UserBody? ExtractCredentials(string authorization)
+    public static UserRegister? ExtractCredentials(string authorization)
     {
         if (String.IsNullOrEmpty(authorization) || !authorization.StartsWith("Basic"))
         {
@@ -54,6 +55,6 @@ public static class Auth
         string username = authorization.Split(':')[0];
         string password = authorization.Split(':')[1];
 
-        return new UserBody(username, password);
+        return new UserRegister(username, password);
     }
 }

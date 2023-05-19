@@ -11,20 +11,6 @@ namespace vuc.server.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Rooms",
-                columns: table => new
-                {
-                    RoomId = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: true),
-                    UserId = table.Column<int>(type: "INTEGER", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Rooms", x => x.RoomId);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -39,6 +25,26 @@ namespace vuc.server.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Rooms",
+                columns: table => new
+                {
+                    RoomId = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", nullable: true),
+                    UserId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Rooms", x => x.RoomId);
+                    table.ForeignKey(
+                        name: "FK_Rooms_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Messages",
                 columns: table => new
                 {
@@ -46,7 +52,8 @@ namespace vuc.server.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     Content = table.Column<string>(type: "TEXT", nullable: true),
                     UserId = table.Column<int>(type: "INTEGER", nullable: false),
-                    RoomId = table.Column<int>(type: "INTEGER", nullable: false)
+                    RoomId = table.Column<int>(type: "INTEGER", nullable: false),
+                    InsertedAt = table.Column<DateTime>(type: "TEXT", nullable: false, defaultValueSql: "datetime()")
                 },
                 constraints: table =>
                 {
@@ -57,6 +64,12 @@ namespace vuc.server.Migrations
                         principalTable: "Rooms",
                         principalColumn: "RoomId",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Messages_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -65,10 +78,20 @@ namespace vuc.server.Migrations
                 column: "RoomId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Messages_UserId",
+                table: "Messages",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Rooms_Name",
                 table: "Rooms",
                 column: "Name",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Rooms_UserId",
+                table: "Rooms",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_UserName",
@@ -84,10 +107,10 @@ namespace vuc.server.Migrations
                 name: "Messages");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "Rooms");
 
             migrationBuilder.DropTable(
-                name: "Rooms");
+                name: "Users");
         }
     }
 }

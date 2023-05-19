@@ -59,6 +59,9 @@ public class Message
     public int RoomId { get; set; }
     [JsonIgnore]
     public Room Room { get; set; }
+
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public DateTime InsertedAt { get; set; }
 }
 
 [Index(nameof(UserName), IsUnique = true)]

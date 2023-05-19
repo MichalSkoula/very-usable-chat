@@ -27,4 +27,6 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <Import Project="..\vuc.shared\vuc.shared.projitems" Label="Shared" />
+
 </Project>

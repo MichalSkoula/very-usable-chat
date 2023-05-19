@@ -2,8 +2,9 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using vuc.shared;
 
-namespace vuc.chat;
+namespace vuc.client;
 
 public static class APIClient
 {

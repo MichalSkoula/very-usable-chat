@@ -21,14 +21,14 @@ using var db = new ChatContext();
 // USERS
 app.MapPost(
     "/users/register",
-    async (UserBody user, ChatContext db) =>
+    async (vuc.shared.UserRegister user, ChatContext db) =>
     {
         if (!Auth.CanRegister(db, user.UserName) || user.UserName.Length < 3)
         {
             return Results.Problem("Problem with registration. User may already exists or provided username is too short.");
         }
 
-        db.Users.Add(new User(user.UserName, Auth.Hash(user.Password)));
+        db.Users.Add(new vuc.server.User(user.UserName, Auth.Hash(user.Password)));
         await db.SaveChangesAsync();
         return Results.Ok();
     }
@@ -38,7 +38,7 @@ app.MapPost(
 
 app.MapPost(
     "/users/login",
-    async ([FromHeader(Name = "Authorization")] string? authorization, UserBody user, ChatContext db) =>
+    async ([FromHeader(Name = "Authorization")] string? authorization, vuc.shared.UserRegister user, ChatContext db) =>
     {
         if (Auth.Login(db, authorization) == null)
         {
@@ -139,7 +139,7 @@ app.MapGet(
             return Results.NotFound();
         }
 
-        var messages = db.Messages.Include(u => u.User).Where(m => m.RoomId == roomId).Take(100).ToList();
+        var messages = db.Messages.Include(u => u.User).Where(m => m.RoomId == roomId).OrderByDescending(m => m.MessageId).Take(100).ToList();
         return Results.Ok(messages);
     }
 )

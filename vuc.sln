@@ -10,7 +10,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vuc.chat", "vuc.chat\vuc.chat.csproj", "{D9992A88-E8CD-43DF-BEC5-0AD6E262812F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vuc.client", "vuc.client\vuc.client.csproj", "{43495EF5-635E-4636-A0E2-CEC979DC1250}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "vuc.shared", "vuc.shared\vuc.shared.shproj", "{7716E71B-9E3F-4E89-89E0-9A9B78372921}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -22,15 +24,20 @@ Global
 		{BE4A3998-CAA2-494B-97EA-EE6489CA2A7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BE4A3998-CAA2-494B-97EA-EE6489CA2A7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BE4A3998-CAA2-494B-97EA-EE6489CA2A7B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D9992A88-E8CD-43DF-BEC5-0AD6E262812F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D9992A88-E8CD-43DF-BEC5-0AD6E262812F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D9992A88-E8CD-43DF-BEC5-0AD6E262812F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D9992A88-E8CD-43DF-BEC5-0AD6E262812F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43495EF5-635E-4636-A0E2-CEC979DC1250}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43495EF5-635E-4636-A0E2-CEC979DC1250}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43495EF5-635E-4636-A0E2-CEC979DC1250}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43495EF5-635E-4636-A0E2-CEC979DC1250}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {65942A89-36B5-4C8D-8AB8-4173E7262857}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		vuc.shared\vuc.shared.projitems*{43495ef5-635e-4636-a0e2-cec979dc1250}*SharedItemsImports = 5
+		vuc.shared\vuc.shared.projitems*{7716e71b-9e3f-4e89-89e0-9a9b78372921}*SharedItemsImports = 13
+		vuc.shared\vuc.shared.projitems*{be4a3998-caa2-494b-97ea-ee6489ca2a7b}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

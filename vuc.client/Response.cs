@@ -1,4 +1,4 @@
-﻿namespace vuc.chat;
+﻿namespace vuc.client;
 
 public class Response
 {

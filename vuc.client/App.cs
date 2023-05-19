@@ -1,6 +1,9 @@
-﻿using Terminal.Gui;
+﻿using System.Diagnostics;
+using System.Threading;
+using Terminal.Gui;
+using static Terminal.Gui.View;
 
-namespace vuc.chat;
+namespace vuc.client;
 
 public class App
 {
@@ -8,7 +11,8 @@ public class App
     public static SaveData SaveData = new SaveData("http://localhost:5049/");
     private MenuBar loggedMenu = new MenuBar();
     private MenuBar anonymMenu = new MenuBar();
-    private List<Room> rooms = new();
+    private List<shared.Room> rooms = new();
+    private bool runTask = false;
 
     public App()
     {
@@ -57,6 +61,8 @@ public class App
 
     private void RegisterScreen()
     {
+        runTask = false;
+
         var window = new Window("Register") { X = 0, Y = 1, Width = Dim.Fill(), Height = Dim.Fill() - 1 };
 
         window.Add(new Label("Username: ") { X = 1, Y = 1, Width = 20, Height = 1 });
@@ -83,12 +89,22 @@ public class App
         };
         window.Add(btnRegister);
 
+        window.KeyDown += (KeyEventEventArgs args) =>
+        {
+            if (args.KeyEvent.Key == Key.Esc)
+            {
+                WelcomeScreen();
+            }
+        };
+
         Application.Top.RemoveAll();
         Application.Top.Add(anonymMenu, window);
     }
 
     private void LoginScreen()
     {
+        runTask = false;
+
         var window = new Window("Login") { X = 0, Y = 1, Width = Dim.Fill(), Height = Dim.Fill() - 1 };
 
         window.Add(new Label("Username: ") { X = 1, Y = 1, Width = 20, Height = 1 });
@@ -119,12 +135,22 @@ public class App
         };
         window.Add(btn);
 
+        window.KeyDown += (KeyEventEventArgs args) =>
+        {
+            if (args.KeyEvent.Key == Key.Esc)
+            {
+                WelcomeScreen();
+            }
+        };
+
         Application.Top.RemoveAll();
         Application.Top.Add(anonymMenu, window);
     }
 
     private void LogoutScreen()
     {
+        runTask = false;
+
         saveFile.Delete();
         SaveData.UserName = null;
         SaveData.Password = null;
@@ -134,6 +160,8 @@ public class App
 
     private void RoomsScreen()
     {
+        runTask = false;
+
         var window = new Window("Choose a chat room | User " + SaveData.UserName) { X = 0, Y = 1, Width = Dim.Fill(), Height = Dim.Fill() - 1 };
 
         rooms = APIClient.GetRooms();
@@ -153,6 +181,8 @@ public class App
 
     private void RoomCreateScreen()
     {
+        runTask = false;
+
         var window = new Window("Create a new chat room | User " + SaveData.UserName) { X = 0, Y = 1, Width = Dim.Fill(), Height = Dim.Fill() - 1 };
 
         window.Add(new Label("Title: ") { X = 1, Y = 1, Width = 20, Height = 1 });
@@ -175,37 +205,68 @@ public class App
         };
         window.Add(btn);
 
+        // esc key - go back to rooms
+        window.KeyDown += (KeyEventEventArgs args) =>
+        {
+            if (args.KeyEvent.Key == Key.Esc)
+            {
+                RoomsScreen();
+            }
+        };
+
         Application.Top.RemoveAll();
         Application.Top.Add(loggedMenu, window);
     }
 
     private void RoomScreen(ListViewItemEventArgs item)
     {
+        runTask = true;
+
         var window = new Window("Room: " + item.Value + " | User " + SaveData.UserName) { X = 0, Y = 1, Width = Dim.Fill(), Height = Dim.Fill() - 1 };
 
         TextView content = new TextView() { X = 1, Y = 1, Width = Dim.Fill() - 1, Height = Dim.Fill() - 1 };
         content.ReadOnly = true;
-
-        // item.Item is index in rooms list (not an actual id)--------------------------------
-        var messages = APIClient.GetMessages(rooms.ElementAtOrDefault(item.Item).RoomId);
-        string text = "";
-        foreach (var message in messages)
-        {
-
-            System.Diagnostics.Debug.WriteLine(message);
-            text += message.User.UserName + "\n";
-            text += message.Content + "\n\n";
-        }
-        content.Text = text;
-        //content.ScrollTo(content.height) ????---------------------------------------------
-
         window.Add(content);
+
+        var task = Task.Run(async () => {
+            for (; ; )
+            {
+                if (!runTask)
+                {
+                    throw new OperationCanceledException();
+                }
+
+                // item.Item is index in rooms list (not an actual id)
+                var messages = APIClient.GetMessages(rooms.ElementAtOrDefault(item.Item).RoomId);
+                string text = "";
+                foreach (var message in messages)
+                {
+                    text += message.InsertedAt.TimeOfDay + "\t" + message.User.UserName + "\n";
+                    text += "\t\t\t" + message.Content + "\n\n";
+                }
+                content.Text = text;
+                Debug.WriteLine("Fetched 3 seconds");
+                await Task.Delay(3000);
+            }
+        });
+
+        // esc - go back
+        window.KeyDown += (KeyEventEventArgs args) =>
+        {
+            if (args.KeyEvent.Key == Key.Esc)
+            {
+                RoomsScreen();
+            }
+        };
+
         Application.Top.RemoveAll();
         Application.Top.Add(loggedMenu, window);
     }
 
     private void WelcomeScreen()
     {
+        runTask = false;
+
         if (SaveData.UserName != null)
         {
             this.RoomsScreen();

@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace vuc.chat;
+namespace vuc.client;
 
 public class FileIO
 {
