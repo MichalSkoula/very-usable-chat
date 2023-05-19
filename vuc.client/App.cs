@@ -42,6 +42,14 @@ public class App
                     Application.RequestStop ();
                 })
             }),
+            new MenuBarItem ("_Help", new MenuItem [] {
+                new MenuItem ("_Options", "", () => {
+                    ConfigurationScreen();
+                }),
+                new MenuItem ("_About", "", () => {
+                    AboutScreen(true);
+                }),
+            }),
         };
 
         anonymMenu.Menus = new MenuBarItem[] {
@@ -55,6 +63,11 @@ public class App
                 new MenuItem ("_Quit", "", () => {
                     Application.RequestStop ();
                 })
+            }),
+            new MenuBarItem ("_Help", new MenuItem [] {
+                new MenuItem ("_About", "", () => {
+                    AboutScreen(false);
+                }),
             }),
         };
     }
@@ -316,6 +329,89 @@ public class App
 
         Application.Top.RemoveAll();
         Application.Top.Add(loggedMenu, window);
+    }
+
+    private void AboutScreen(bool logged)
+    {
+        runTask = false;
+
+        var window = new Window("About VUC (Very Usable Chat)")
+        {
+            X = 0,
+            Y = 1,
+            Width = Dim.Fill(),
+            Height = Dim.Fill() - 1
+        };
+
+        var webLabel = new Label("Credits: https://skoula.cz") { X = 1, Y = 1, Width = 20, Height = 1 };
+        webLabel.Clicked += () =>
+        {
+            Process.Start(new ProcessStartInfo("https://skoula.cz") { UseShellExecute = true });
+        };
+        window.Add(webLabel);
+
+
+        // esc - go back
+        window.KeyDown += (KeyEventEventArgs args) =>
+        {
+            if (args.KeyEvent.Key == Key.Esc)
+            {
+                if (logged)
+                {
+                    RoomsScreen();
+                } 
+                else
+                {
+                    WelcomeScreen();
+                }
+            }
+        };
+
+        Application.Top.RemoveAll();
+        Application.Top.Add(window, logged ? loggedMenu : anonymMenu);
+
+        Application.Run();
+    }
+
+    private void ConfigurationScreen()
+    {
+        runTask = false;
+
+        var window = new Window("Configuration VUC (Very Usable Chat)")
+        {
+            X = 0,
+            Y = 1,
+            Width = Dim.Fill(),
+            Height = Dim.Fill() - 1
+        };
+
+        window.Add(new Label("Your configuration file location:") { X = 1, Y = 1, Width = 20, Height = 1 });
+
+        var fileLabel = new Label(saveFile.FullPath) { X = 1, Y = 2, Width = 20, Height = 1 };
+        fileLabel.Clicked += () =>
+        {
+            Process.Start(new ProcessStartInfo()
+            {
+                FileName = saveFile.Folder,
+                UseShellExecute = true,
+                Verb = "open"
+            });
+        };
+        window.Add(fileLabel);
+
+        // esc - go back
+        window.KeyDown += (KeyEventEventArgs args) =>
+        {
+            if (args.KeyEvent.Key == Key.Esc)
+            {
+                RoomsScreen();
+            }
+        };
+
+        Application.Top.RemoveAll();
+        Application.Top.Add(window, loggedMenu);
+
+        Application.Run();
     }
 
     private void WelcomeScreen()

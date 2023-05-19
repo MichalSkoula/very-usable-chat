@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using static System.Environment;
 
 namespace vuc.client;
 
@@ -7,7 +8,7 @@ public class FileIO
 {
     public string File { get; set; }
     public string Folder { get; private set; }
-    private string FullPath
+    public string FullPath
     {
         get { return Path.Combine(this.Folder, File); }
     }
@@ -16,13 +17,12 @@ public class FileIO
     {
         this.File = file;
 
-        this.Folder = "";/* Path.Combine(GetFolderPath(SpecialFolder.ApplicationData), "VUC");
+        this.Folder = Path.Combine(GetFolderPath(SpecialFolder.ApplicationData), "vuc");
 
         if (!Directory.Exists(this.Folder))
         {
             Directory.CreateDirectory(this.Folder);
         }
-        */
     }
 
     public void Load()
