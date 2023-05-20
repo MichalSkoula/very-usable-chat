@@ -2,9 +2,7 @@
 
 Demo project - server / klient chat application built on .NET 7
 
-## Client
-
-Console app with Terminal.Gui interface.
+## Client - .NET console app with Terminal.Gui user interface
 
 ![image](https://github.com/MichalSkoula/very-usable-chat/assets/5922575/c33299c2-8f57-46d2-9a14-fa2a2fc1f5f3)
 
@@ -12,13 +10,13 @@ Console app with Terminal.Gui interface.
 - ```dotnet run```
 - You must change server URL in ```App.cs``` - ```new SaveData("your.sever.url")```
 
-## Server - ASP.NET Minimal API 
+## Server - ASP.NET Minimal API with EF Core and SQLite DB
 
 ### Run it:
 
 - ```dotnet run```
 - Published app should be copied to your webserver folder, for example: `/var/www/DOMAIN`
-- Database is stored in `/var/www/DOMAIN/data/vuc.db` (production) or in `Environment.SpecialFolder.LocalApplicationData` (development)
+- SQLite database file is stored in `/var/www/DOMAIN/data/vuc.db` (production) or in `Environment.SpecialFolder.LocalApplicationData` (development)
 - How to run it on linux server: https://www.printables.com/cs/model/163302-worlds-best-css-developer-trophy
 - Swagger API docs: /swagger/index.html
 - vhost / reverse proxy example:
