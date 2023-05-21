@@ -343,9 +343,16 @@ public class App
         };
         dialog.Add(webLabel);
 
+        var webLabel2 = new Label("Source: https://github.com/MichalSkoula/very-usable-chat") { X = 1, Y = 2, Width = 20, Height = 1 };
+        webLabel.Clicked += () =>
+        {
+            Process.Start(new ProcessStartInfo("https://github.com/MichalSkoula/very-usable-chat") { UseShellExecute = true });
+        };
+        dialog.Add(webLabel2);
 
-        dialog.Add(new Label("Your configuration file location:") { X = 1, Y = 3, Width = 20, Height = 1 });
-        var fileLabel = new Label(saveFile.FullPath) { X = 1, Y = 4, Width = 20, Height = 1 };
+
+        dialog.Add(new Label("Your configuration file location:") { X = 1, Y = 4, Width = 20, Height = 1 });
+        var fileLabel = new Label(saveFile.FullPath) { X = 1, Y = 5, Width = 20, Height = 1 };
         fileLabel.Clicked += () =>
         {
             Process.Start(new ProcessStartInfo()
