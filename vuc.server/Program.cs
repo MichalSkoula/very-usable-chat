@@ -104,6 +104,7 @@ app.MapPost(
             return Results.Unauthorized();
         }
 
+        room.Name = room.Name.Trim();
         if (room.Name.Length < 3)
         {
             return Results.Problem("Room title is too short");
