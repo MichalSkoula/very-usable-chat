@@ -8,7 +8,7 @@ namespace vuc.client;
 public class App
 {
     private static FileIO saveFile = new FileIO("vuc.json");
-    public static SaveData SaveData = new SaveData("http://localhost:5049/");
+    public static SaveData SaveData = new SaveData();
     private MenuBar loggedMenu = new MenuBar();
     private MenuBar anonymMenu = new MenuBar();
     private List<Room> rooms = new();
@@ -43,9 +43,6 @@ public class App
                 })
             }),
             new MenuBarItem ("_Help", new MenuItem [] {
-                new MenuItem ("_Options", "", () => {
-                    ConfigurationScreen();
-                }),
                 new MenuItem ("_About", "", () => {
                     AboutScreen(true);
                 }),
@@ -167,7 +164,6 @@ public class App
         saveFile.Delete();
         SaveData.UserName = null;
         SaveData.Password = null;
-        SaveData.RoomId = null;
         WelcomeScreen();
     }
 
@@ -335,59 +331,21 @@ public class App
     {
         runTask = false;
 
-        var window = new Window("About VUC (Very Usable Chat)")
-        {
-            X = 0,
-            Y = 1,
-            Width = Dim.Fill(),
-            Height = Dim.Fill() - 1
-        };
+        var ok = new Button(3, 14, "Ok");
+        ok.Clicked += () => Application.RequestStop();
+
+        var dialog = new Dialog("About VUC (Very Usable Chat)", 60, 18, ok);
 
         var webLabel = new Label("Credits: https://skoula.cz") { X = 1, Y = 1, Width = 20, Height = 1 };
         webLabel.Clicked += () =>
         {
             Process.Start(new ProcessStartInfo("https://skoula.cz") { UseShellExecute = true });
         };
-        window.Add(webLabel);
+        dialog.Add(webLabel);
 
 
-        // esc - go back
-        window.KeyDown += (KeyEventEventArgs args) =>
-        {
-            if (args.KeyEvent.Key == Key.Esc)
-            {
-                if (logged)
-                {
-                    RoomsScreen();
-                } 
-                else
-                {
-                    WelcomeScreen();
-                }
-            }
-        };
-
-        Application.Top.RemoveAll();
-        Application.Top.Add(window, logged ? loggedMenu : anonymMenu);
-
-        Application.Run();
-    }
-
-    private void ConfigurationScreen()
-    {
-        runTask = false;
-
-        var window = new Window("Configuration VUC (Very Usable Chat)")
-        {
-            X = 0,
-            Y = 1,
-            Width = Dim.Fill(),
-            Height = Dim.Fill() - 1
-        };
-
-        window.Add(new Label("Your configuration file location:") { X = 1, Y = 1, Width = 20, Height = 1 });
-
-        var fileLabel = new Label(saveFile.FullPath) { X = 1, Y = 2, Width = 20, Height = 1 };
+        dialog.Add(new Label("Your configuration file location:") { X = 1, Y = 3, Width = 20, Height = 1 });
+        var fileLabel = new Label(saveFile.FullPath) { X = 1, Y = 4, Width = 20, Height = 1 };
         fileLabel.Clicked += () =>
         {
             Process.Start(new ProcessStartInfo()
@@ -397,28 +355,35 @@ public class App
                 Verb = "open"
             });
         };
-        window.Add(fileLabel);
+        dialog.Add(fileLabel);
 
         // esc - go back
-        window.KeyDown += (KeyEventEventArgs args) =>
+        dialog.KeyDown += (KeyEventEventArgs args) =>
         {
             if (args.KeyEvent.Key == Key.Esc)
             {
-                RoomsScreen();
+                if (logged)
+                {
+                    RoomsScreen();
+                }
+                else
+                {
+                    WelcomeScreen();
+                }
             }
         };
 
-        Application.Top.RemoveAll();
-        Application.Top.Add(window, loggedMenu);
+        //Application.Top.RemoveAll();
+        //Application.Top.Add(window, logged ? loggedMenu : anonymMenu);
 
-        Application.Run();
+        Application.Run(dialog);
     }
 
     private void WelcomeScreen()
     {
         runTask = false;
 
-        if (SaveData.UserName != null)
+        if (SaveData.UserName != null && SaveData.UserName.Length > 0)
         {
             this.RoomsScreen();
         }

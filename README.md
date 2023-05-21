@@ -7,8 +7,10 @@ Demo project - server / klient chat application built on .NET 7
 ![image](https://github.com/MichalSkoula/very-usable-chat/assets/5922575/c33299c2-8f57-46d2-9a14-fa2a2fc1f5f3)
 
 ### Run it:
+
+- copy vuc.example.json to vuc.json
+- change ```Server``` url
 - ```dotnet run```
-- You must change server URL in ```App.cs``` - ```new SaveData("your.sever.url")```
 
 ## Server - ASP.NET Minimal API with EF Core and SQLite DB
 
