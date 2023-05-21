@@ -12,6 +12,8 @@ public class ChatContext : DbContext
 
     public ChatContext()
     {
+        DbPath = "data/vuc.db";
+        /*
         if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
         {
             var folder = Environment.SpecialFolder.LocalApplicationData;
@@ -21,7 +23,7 @@ public class ChatContext : DbContext
         else
         {
             DbPath = "data/vuc.db";
-        }
+        }*/
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder options) => options.UseSqlite($"Data Source={DbPath}");
