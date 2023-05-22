@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
-using System.Threading;
 using Terminal.Gui;
+using vuc.client.Classes;
 using static Terminal.Gui.View;
 
 namespace vuc.client;
@@ -8,10 +8,10 @@ namespace vuc.client;
 public class App
 {
     private static FileIO saveFile = new FileIO("vuc.json");
-    public static SaveData SaveData = new SaveData("http://localhost:5049/");
+    public static SaveData SaveData = new SaveData();
     private MenuBar loggedMenu = new MenuBar();
     private MenuBar anonymMenu = new MenuBar();
-    private List<shared.Room> rooms = new();
+    private List<Room> rooms = new();
     private bool runTask = false;
 
     public App()
@@ -42,6 +42,11 @@ public class App
                     Application.RequestStop ();
                 })
             }),
+            new MenuBarItem ("_Help", new MenuItem [] {
+                new MenuItem ("_About", "", () => {
+                    AboutScreen(true);
+                }),
+            }),
         };
 
         anonymMenu.Menus = new MenuBarItem[] {
@@ -55,6 +60,11 @@ public class App
                 new MenuItem ("_Quit", "", () => {
                     Application.RequestStop ();
                 })
+            }),
+            new MenuBarItem ("_Help", new MenuItem [] {
+                new MenuItem ("_About", "", () => {
+                    AboutScreen(false);
+                }),
             }),
         };
     }
@@ -154,7 +164,6 @@ public class App
         saveFile.Delete();
         SaveData.UserName = null;
         SaveData.Password = null;
-        SaveData.RoomId = null;
         WelcomeScreen();
     }
 
@@ -165,6 +174,12 @@ public class App
         var window = new Window("Choose a chat room | User " + SaveData.UserName) { X = 0, Y = 1, Width = Dim.Fill(), Height = Dim.Fill() - 1 };
 
         rooms = APIClient.GetRooms();
+
+        if (!rooms.Any())
+        {
+            RoomCreateScreen();
+            return;
+        }
 
         ListView list = new ListView(rooms) { X = 0, Y = 0, Width = 30, Height = Dim.Fill() - 2 };
 
@@ -222,13 +237,57 @@ public class App
     {
         runTask = true;
 
-        var window = new Window("Room: " + item.Value + " | User " + SaveData.UserName) { X = 0, Y = 1, Width = Dim.Fill(), Height = Dim.Fill() - 1 };
+        // item.Item is index in rooms list (not an actual id)
+        int roomId = rooms.ElementAtOrDefault(item.Item).RoomId;
 
-        TextView content = new TextView() { X = 1, Y = 1, Width = Dim.Fill() - 1, Height = Dim.Fill() - 1 };
+        var window = new Window("Room: " + item.Value + " | User " + SaveData.UserName) { X = 0, Y = 1, Width = Dim.Fill(), Height = Dim.Fill() };
+
+        TextView content = new TextView() { X = 1, Y = 3, Width = Dim.Fill() - 1, Height = Dim.Fill() - 1 };
         content.ReadOnly = true;
+        content.WordWrap = true;
         window.Add(content);
 
-        var task = Task.Run(async () => {
+        TextField newMessage = new TextField("") { X = 1, Y = 1, Width = Dim.Percent(70), Height = 1 };
+        window.Add(newMessage);
+        newMessage.SetFocus();
+
+        Button btn = new Button("Post") { X = Pos.Percent(80), Y = 1, Width = Dim.Percent(20) };
+        btn.Clicked += () =>
+        {
+            if (((string)newMessage.Text).Trim() == "")
+            {
+                return;
+            }
+
+            newMessage.ReadOnly = true;
+            Response response = APIClient.PostMessage(roomId, (string)newMessage.Text);
+            newMessage.ReadOnly = false;
+
+            if (response.Success)
+            {
+                newMessage.Text = "";
+            }
+            else
+            {
+                MessageBox.ErrorQuery("An error occured", response.Message, "Hmm");
+            }
+
+            newMessage.SetFocus();
+        };
+        window.Add(btn);
+
+        // enter key - post
+        window.KeyDown += (KeyEventEventArgs args) =>
+        {
+            if (args.KeyEvent.Key == Key.Enter)
+            {
+                btn.OnClicked();
+            }
+        };
+
+        // periodically update content 
+        var task = Task.Run(async () =>
+        {
             for (; ; )
             {
                 if (!runTask)
@@ -236,15 +295,20 @@ public class App
                     throw new OperationCanceledException();
                 }
 
-                // item.Item is index in rooms list (not an actual id)
-                var messages = APIClient.GetMessages(rooms.ElementAtOrDefault(item.Item).RoomId);
+                var messages = APIClient.GetMessages(roomId);
                 string text = "";
                 foreach (var message in messages)
                 {
                     text += message.InsertedAt.TimeOfDay + "\t" + message.User.UserName + "\n";
-                    text += "\t\t\t" + message.Content + "\n\n";
+                    text += message.Content + "\n\n";
                 }
-                content.Text = text;
+
+                // this must be done in mainloop to be immediately reflected in the UI
+                Application.MainLoop.Invoke(() =>
+                {
+                    content.Text = text;
+                });
+
                 Debug.WriteLine("Fetched 3 seconds");
                 await Task.Delay(3000);
             }
@@ -263,11 +327,70 @@ public class App
         Application.Top.Add(loggedMenu, window);
     }
 
+    private void AboutScreen(bool logged)
+    {
+        runTask = false;
+
+        var ok = new Button(3, 14, "Ok");
+        ok.Clicked += () => Application.RequestStop();
+
+        var dialog = new Dialog("About VUC (Very Usable Chat)", 60, 18, ok);
+
+        var webLabel = new Label("Credits: https://skoula.cz") { X = 1, Y = 1, Width = 20, Height = 1 };
+        webLabel.Clicked += () =>
+        {
+            Process.Start(new ProcessStartInfo("https://skoula.cz") { UseShellExecute = true });
+        };
+        dialog.Add(webLabel);
+
+        var webLabel2 = new Label("Source: https://github.com/MichalSkoula/very-usable-chat") { X = 1, Y = 2, Width = 20, Height = 1 };
+        webLabel.Clicked += () =>
+        {
+            Process.Start(new ProcessStartInfo("https://github.com/MichalSkoula/very-usable-chat") { UseShellExecute = true });
+        };
+        dialog.Add(webLabel2);
+
+
+        dialog.Add(new Label("Your configuration file location:") { X = 1, Y = 4, Width = 20, Height = 1 });
+        var fileLabel = new Label(saveFile.FullPath) { X = 1, Y = 5, Width = 20, Height = 1 };
+        fileLabel.Clicked += () =>
+        {
+            Process.Start(new ProcessStartInfo()
+            {
+                FileName = saveFile.Folder,
+                UseShellExecute = true,
+                Verb = "open"
+            });
+        };
+        dialog.Add(fileLabel);
+
+        // esc - go back
+        dialog.KeyDown += (KeyEventEventArgs args) =>
+        {
+            if (args.KeyEvent.Key == Key.Esc)
+            {
+                if (logged)
+                {
+                    RoomsScreen();
+                }
+                else
+                {
+                    WelcomeScreen();
+                }
+            }
+        };
+
+        //Application.Top.RemoveAll();
+        //Application.Top.Add(window, logged ? loggedMenu : anonymMenu);
+
+        Application.Run(dialog);
+    }
+
     private void WelcomeScreen()
     {
         runTask = false;
 
-        if (SaveData.UserName != null)
+        if (SaveData.UserName != null && SaveData.UserName.Length > 0)
         {
             this.RoomsScreen();
         }
@@ -284,8 +407,6 @@ public class App
             Application.Top.Add(win, anonymMenu);
         }
 
-
         Application.Run();
     }
-
 }

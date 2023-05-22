@@ -1,4 +1,4 @@
-﻿namespace vuc.shared;
+﻿namespace vuc.server.Classes;
 
 public class UserRegister
 {

@@ -1,24 +1,31 @@
 # very-usable-chat
 
-Demo project - server / klient chat application in .NET 7
+Demo project - cross-platform server + client chat application.
 
-## Client
+## Client - .NET console app with Terminal.Gui user interface
 
-Console app with Terminal.Gui 
+![image](https://github.com/MichalSkoula/very-usable-chat/assets/5922575/c33299c2-8f57-46d2-9a14-fa2a2fc1f5f3)
 
-## Server - ASP.NET Minimal API 
+### Run it:
 
-Run it:
-```dotnet run```
+- copy vuc.example.json to vuc.json
+- change ```Server``` url
+- ```dotnet run```
 
-Swagger API docs: /swagger/index.html
+## Server - ASP.NET Minimal API with EF Core and SQLite DB
 
-- Published app should be copied to your webserver folder, for example: `/var/www/DOMAIN`
+### Development:
 
-- Database is stored in `/var/www/DOMAIN/data/vuc.db` (production) or in `Environment.SpecialFolder.LocalApplicationData` (development)
+- create db: ```dotnet ef database update``` (creates db in ./data/vuc.db) OR just rename vuc.example.db
+- run it: ```dotnet run```
+- Swagger API docs: /swagger/index.html
 
+
+### Production:
+
+- Published app should be copied to your webserver folder, for example: `/var/www/your.server.domain/`
+- SQLite database file is stored in `/var/www/your.server.domain/data/vuc.db`
 - How to run it on linux server: https://www.printables.com/cs/model/163302-worlds-best-css-developer-trophy
-
 - vhost / reverse proxy example:
 
 ```
@@ -28,13 +35,9 @@ Swagger API docs: /swagger/index.html
     ProxyPassReverse / http://0.0.0.0:5000/
 
     ServerAdmin webmaster@localhost
-    ServerName DOMAIN
-    ServerAlias www.DOMAIN
-    DocumentRoot /var/www/DOMAIN
+    ServerName your.server.domain
+    DocumentRoot /var/www/your.server.domain
     ErrorLog ${APACHE_LOG_DIR}/error.log
     CustomLog ${APACHE_LOG_DIR}/access.log combined
-
-    #RewriteEngine on
-    #RewriteRule ^(.*)$ https://%{HTTP_HOST}$1 [R=301,L]
 </VirtualHost>
 ```

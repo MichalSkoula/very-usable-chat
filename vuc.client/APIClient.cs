@@ -2,7 +2,7 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using vuc.shared;
+using vuc.client.Classes;
 
 namespace vuc.client;
 
@@ -103,6 +103,25 @@ public static class APIClient
         {
             System.Diagnostics.Debug.WriteLine(e.Message);
             return new List<Message>();
+        }
+    }
+
+    public static Response PostMessage(int roomId, string text)
+    {
+        try
+        {
+            Authenticate();
+
+            HttpContent content = new StringContent(System.Text.Json.JsonSerializer.Serialize(new { Content = text }), Encoding.UTF8, "application/json");
+            HttpResponseMessage response = client.PostAsync(App.SaveData.Server + "messages/" + roomId, content).Result;
+
+            string message = TryToParseDetail(response);
+
+            return new Response(response.IsSuccessStatusCode, message);
+        }
+        catch (HttpRequestException e)
+        {
+            return new Response(false, e.Message);
         }
     }
 

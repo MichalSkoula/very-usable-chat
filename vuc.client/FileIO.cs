@@ -7,7 +7,7 @@ public class FileIO
 {
     public string File { get; set; }
     public string Folder { get; private set; }
-    private string FullPath
+    public string FullPath
     {
         get { return Path.Combine(this.Folder, File); }
     }
@@ -15,14 +15,13 @@ public class FileIO
     public FileIO(string file = null)
     {
         this.File = file;
+        this.Folder = ".";
+        //this.Folder = Path.Combine(GetFolderPath(SpecialFolder.ApplicationData), "vuc");
 
-        this.Folder = "";/* Path.Combine(GetFolderPath(SpecialFolder.ApplicationData), "VUC");
-
-        if (!Directory.Exists(this.Folder))
+        if (this.Folder != "." && !Directory.Exists(this.Folder))
         {
             Directory.CreateDirectory(this.Folder);
         }
-        */
     }
 
     public void Load()
@@ -32,31 +31,35 @@ public class FileIO
             string json = System.IO.File.ReadAllText(FullPath);
             System.Diagnostics.Debug.WriteLine(json.ToString());
 
-            try
-            {
-                dynamic data = JObject.Parse(json);
+            dynamic data = JObject.Parse(json);
 
-                if (data.ContainsKey("Server"))
-                {
-                    App.SaveData.Server = data.Server;
-                }
-                if (data.ContainsKey("RoomId"))
-                {
-                    App.SaveData.RoomId = data.RoomId;
-                }
-                if (data.ContainsKey("UserName"))
-                {
-                    App.SaveData.UserName = data.UserName;
-                }
-                if (data.ContainsKey("Password"))
-                {
-                    App.SaveData.Password = data.Password;
-                }
-            }
-            catch (Exception e)
+            // Server property is required
+            if (data.ContainsKey("Server") && ((string)data.Server).Length > 0 && Uri.IsWellFormedUriString((string)data.Server, UriKind.Absolute))
             {
-
+                App.SaveData.Server = data.Server;
             }
+            else
+            {
+                Console.WriteLine("vuc.json configuration file is missing the \"Server\" property or it is not valid URI");
+                Console.ReadKey();
+                Environment.Exit(0);
+            }
+
+            if (data.ContainsKey("UserName"))
+            {
+                App.SaveData.UserName = data.UserName;
+            }
+            if (data.ContainsKey("Password"))
+            {
+                App.SaveData.Password = data.Password;
+            }
+
+        }
+        else
+        {
+            Console.WriteLine("vuc.json configuration file not found");
+            Console.ReadKey();
+            Environment.Exit(0);
         }
     }
 
