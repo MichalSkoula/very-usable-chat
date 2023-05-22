@@ -174,4 +174,28 @@ app.MapPost(
 .WithDescription("Post new message to selected chat room.")
 .WithOpenApi();
 
+app.MapPost(
+    "/messages/{roomId}/clear",
+    async ([FromRoute] int roomId, [FromHeader(Name = "Authorization")] string? authorization, ChatContext db) =>
+    {
+        User? user = Auth.Login(db, authorization);
+        if (user == null)
+        {
+            return Results.Unauthorized();
+        }
+
+        if (!db.Rooms.Where(r => r.RoomId == roomId && r.UserId == user.UserId).Any())
+        {
+            return Results.Problem("You have no right to do it!");
+        }
+
+        db.Messages.Where(m => m.RoomId == roomId).ExecuteDelete();
+        await db.SaveChangesAsync();
+
+        return Results.Ok();
+    }
+)
+.WithDescription("Delete all messages in specified room.")
+.WithOpenApi();
+
 app.Run();
