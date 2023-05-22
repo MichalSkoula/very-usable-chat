@@ -40,19 +40,20 @@ app.MapPost(
 
 app.MapPost(
     "/users/login",
-    async ([FromHeader(Name = "Authorization")] string? authorization, UserRegister user, ChatContext db) =>
+    async ([FromHeader(Name = "Authorization")] string? authorization, ChatContext db) =>
     {
-        if (Auth.Login(db, authorization) == null)
+        User user = Auth.Login(db, authorization);
+        if (user == null)
         {
             return Results.Problem("Cannot login.");
         }
         else
         {
-            return Results.Ok();
+            return Results.Ok(user);
         }
     }
 )
-.WithDescription("Check if user exists")
+.WithDescription("Check if user exists and maybe return him")
 .WithOpenApi();
 
 // ROOMS

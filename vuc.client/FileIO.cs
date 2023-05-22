@@ -45,6 +45,10 @@ public class FileIO
                 Environment.Exit(0);
             }
 
+            if (data.ContainsKey("UserId"))
+            {
+                App.SaveData.UserId = data.UserId;
+            }
             if (data.ContainsKey("UserName"))
             {
                 App.SaveData.UserName = data.UserName;

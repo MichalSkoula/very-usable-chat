@@ -128,9 +128,10 @@ public class App
         Button btn = new Button("Login") { X = 1, Y = 7, };
         btn.Clicked += () =>
         {
-            bool success = APIClient.Login((string)UserName.Text, (string)Password.Text);
-            if (success)
+            int userId = APIClient.Login((string)UserName.Text, (string)Password.Text);
+            if (userId > 0)
             {
+                SaveData.UserId = (int)userId;
                 SaveData.UserName = (string)UserName.Text;
                 SaveData.Password = (string)Password.Text;
 
@@ -239,6 +240,7 @@ public class App
 
         // item.Item is index in rooms list (not an actual id)
         int roomId = rooms.ElementAtOrDefault(item.Item).RoomId;
+        int roomUserId = (int)rooms.ElementAtOrDefault(item.Item).UserId;
 
         var window = new Window("Room: " + item.Value + " | User " + SaveData.UserName) { X = 0, Y = 1, Width = Dim.Fill(), Height = Dim.Fill() };
 
@@ -247,11 +249,11 @@ public class App
         content.WordWrap = true;
         window.Add(content);
 
-        TextField newMessage = new TextField("") { X = 1, Y = 1, Width = Dim.Percent(70), Height = 1 };
+        TextField newMessage = new TextField("") { X = 1, Y = 1, Width = Dim.Percent(75), Height = 1 };
         window.Add(newMessage);
         newMessage.SetFocus();
 
-        Button btn = new Button("Post") { X = Pos.Percent(80), Y = 1, Width = Dim.Percent(20) };
+        Button btn = new Button("Post") { X = Pos.Percent(80), Y = 1, Width = Dim.Percent(10) };
         btn.Clicked += () =>
         {
             if (((string)newMessage.Text).Trim() == "")
@@ -275,6 +277,24 @@ public class App
             newMessage.SetFocus();
         };
         window.Add(btn);
+
+        Button btnClear = new Button("Clear") { X = Pos.Percent(90), Y = 1, Width = Dim.Percent(10) };
+        btnClear.Enabled = roomUserId == SaveData.UserId;
+        btnClear.Clicked += () =>
+        {
+            Response response = APIClient.ClearMessages(roomId);
+            newMessage.ReadOnly = false;
+
+            if (response.Success)
+            {
+                MessageBox.Query("Clearing Successful", "Clearing sucessfull.", "Ok");
+            }
+            else
+            {
+                MessageBox.ErrorQuery("An error occured", response.Message, "Hmm");
+            }
+        };
+        window.Add(btnClear);
 
         // enter key - post
         window.KeyDown += (KeyEventEventArgs args) =>

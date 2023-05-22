@@ -33,7 +33,7 @@ public static class APIClient
         }
     }
 
-    public static bool Login(string userName, string password)
+    public static int Login(string userName, string password)
     {
         try
         {
@@ -42,11 +42,17 @@ public static class APIClient
             HttpContent content = new StringContent(System.Text.Json.JsonSerializer.Serialize(new { }), Encoding.UTF8, "application/json");
             HttpResponseMessage response = client.PostAsync(App.SaveData.Server + "users/login", content).Result;
 
-            return response.IsSuccessStatusCode;
+            if (response.IsSuccessStatusCode)
+            {
+                string responseContent = response.Content.ReadAsStringAsync().Result;
+                User? user = JsonConvert.DeserializeObject<User>(responseContent);
+                return user == null ? 0 : user.UserId;
+            }
+            return 0;
         }
         catch (HttpRequestException e)
         {
-            return false;
+            return 0;
         }
     }
 
@@ -118,6 +124,23 @@ public static class APIClient
             string message = TryToParseDetail(response);
 
             return new Response(response.IsSuccessStatusCode, message);
+        }
+        catch (HttpRequestException e)
+        {
+            return new Response(false, e.Message);
+        }
+    }
+
+    public static Response ClearMessages(int roomId)
+    {
+        try
+        {
+            Authenticate();
+
+            HttpContent content = new StringContent(System.Text.Json.JsonSerializer.Serialize(new { }), Encoding.UTF8, "application/json");
+            HttpResponseMessage response = client.PostAsync(App.SaveData.Server + "messages/" + roomId + "/clear", content).Result;
+
+            return new Response(response.IsSuccessStatusCode);
         }
         catch (HttpRequestException e)
         {
