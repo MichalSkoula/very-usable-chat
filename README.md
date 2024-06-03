@@ -25,7 +25,6 @@ Demo project - cross-platform server + client chat application.
 
 - Published app should be copied to your webserver folder, for example: `/var/www/your.server.domain/`
 - SQLite database file is stored in `/var/www/your.server.domain/data/vuc.db`
-- How to run it on linux server: https://www.printables.com/cs/model/163302-worlds-best-css-developer-trophy
 - vhost / reverse proxy example:
 
 ```
