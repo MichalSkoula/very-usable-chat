@@ -247,12 +247,14 @@ public class App
         TextView content = new TextView() { X = 1, Y = 3, Width = Dim.Fill() - 1, Height = Dim.Fill() - 1 };
         content.ReadOnly = true;
         content.WordWrap = true;
+        var normalAttr = Application.Driver.MakeAttribute(Color.Black, Color.Gray);
+        var focusAttr = Application.Driver.MakeAttribute(Color.Black, Color.White);
         content.ColorScheme = new ColorScheme()
         {
-            Normal = Application.Driver.MakeAttribute(Color.Black, Color.Gray),
-            Focus = Application.Driver.MakeAttribute(Color.Black, Color.Gray),
-            HotNormal = Application.Driver.MakeAttribute(Color.Black, Color.Gray),
-            HotFocus = Application.Driver.MakeAttribute(Color.Black, Color.Gray)
+            Normal = normalAttr,
+            Focus = focusAttr,
+            HotNormal = normalAttr,
+            HotFocus = focusAttr
         };
         window.Add(content);
 
