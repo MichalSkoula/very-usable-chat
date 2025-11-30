@@ -247,6 +247,13 @@ public class App
         TextView content = new TextView() { X = 1, Y = 3, Width = Dim.Fill() - 1, Height = Dim.Fill() - 1 };
         content.ReadOnly = true;
         content.WordWrap = true;
+        content.ColorScheme = new ColorScheme()
+        {
+            Normal = Application.Driver.MakeAttribute(Color.Black, Color.Gray),
+            Focus = Application.Driver.MakeAttribute(Color.Black, Color.Gray),
+            HotNormal = Application.Driver.MakeAttribute(Color.Black, Color.Gray),
+            HotFocus = Application.Driver.MakeAttribute(Color.Black, Color.Gray)
+        };
         window.Add(content);
 
         TextField newMessage = new TextField("") { X = 1, Y = 1, Width = Dim.Percent(75), Height = 1 };
